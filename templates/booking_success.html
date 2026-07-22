@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Success</title>
+
+    <style>
+
+        body{
+            margin:0;
+            padding:0;
+
+            font-family:Arial,sans-serif;
+
+            background:linear-gradient(
+                135deg,
+                #d4fc79,
+                #96e6a1
+            );
+
+            min-height:100vh;
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
+
+        .truck-card{
+
+            width:700px;
+
+            background:white;
+
+            padding:40px;
+
+            border-radius:25px;
+
+            text-align:center;
+
+            box-shadow:0 15px 40px rgba(0,0,0,.2);
+        }
+
+        .success-banner{
+
+            background:linear-gradient(
+                135deg,
+                #16a34a,
+                #22c55e
+            );
+
+            color:white;
+
+            padding:20px;
+
+            border-radius:15px;
+
+            margin-bottom:25px;
+        }
+
+        .success-banner h1{
+            margin:0;
+            font-size:40px;
+        }
+
+        .owner-info{
+            font-size:22px;
+            color:#333;
+            margin:15px 0;
+        }
+
+        .distance-box{
+
+            background:#eefaf1;
+
+            padding:18px;
+
+            border-radius:12px;
+
+            margin-top:20px;
+
+            font-size:30px;
+
+            font-weight:bold;
+
+            color:#0f5132;
+        }
+
+        .price-box{
+
+            background:#fff3cd;
+
+            padding:18px;
+
+            border-radius:12px;
+
+            margin-top:15px;
+
+            font-size:36px;
+
+            font-weight:bold;
+
+            color:#b45309;
+        }
+
+        .back-btn{
+
+            display:inline-block;
+
+            margin-top:25px;
+
+            padding:14px 28px;
+
+            background:#2563eb;
+
+            color:white;
+
+            text-decoration:none;
+
+            border-radius:10px;
+
+            font-size:18px;
+        }
+
+        .back-btn:hover{
+            opacity:.9;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="truck-card">
+
+    <div class="success-banner">
+        <h1>🚚 Truck Available</h1>
+    </div>
+
+    <div class="owner-info">
+        <strong>Owner:</strong> {{ owner.owner_name }}
+    </div>
+
+    <div class="owner-info">
+        <strong>Mobile:</strong> {{ owner.mobile }}
+    </div>
+
+    <div class="owner-info">
+        <strong>Truck Number:</strong> {{ owner.truck_number }}
+    </div>
+
+    <div class="distance-box">
+        📍 Distance: {{ distance }} KM
+    </div>
+
+    <div class="price-box">
+        💰 Estimated Price: ₹{{ price }}
+    </div>
+
+    <a href="/" class="back-btn">
+        Book Another Truck
+    </a>
+
+</div>
+
+</body>
+</html>

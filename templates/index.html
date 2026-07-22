@@ -1,0 +1,764 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block body %}
+
+<section class="hero-section">
+
+    <div class="hero-content">
+
+        <h1>Fast & Reliable Logistics</h1>
+
+        <p>
+            Book Mini Trucks, Tempos & Full Trucks Anytime, Anywhere.
+        </p>
+
+        <button class="hero-btn" onclick="openPopup()">
+            Get Price Estimate
+        </button>
+
+    </div>
+
+</section>
+
+<!-- POPUP -->
+<!-- =========================
+     BOOKING POPUP
+========================== -->
+
+<div class="popup-overlay" id="popup">
+
+    <div class="booking-container">
+
+        <!-- Close Button -->
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+
+        <!-- Fixed Header -->
+        <div class="booking-header">
+
+            <h2 class="booking-title">
+                🚚 Need a Rental Truck?
+            </h2>
+
+            <p class="booking-subtitle">
+                Book a truck in minutes for safe and reliable transportation.
+            </p>
+
+        </div>
+
+        <!-- Scrollable Form -->
+        <div class="booking-form">
+
+            <form method="POST" action="{% url 'create_booking' %}">
+
+                {% csrf_token %}
+
+                <!-- Loading Location -->
+                <div class="input-box">
+
+                    <span class="input-icon loading-icon">📍</span>
+
+                    <input
+                        type="text"
+                        id="pickup-location"
+                        name="pickup_location"
+                        placeholder="Loading Location"
+                        autocomplete="off"
+                        required>
+
+                    <div id="pickup-suggestions" class="suggestions"></div>
+
+                </div>
+
+                <!-- Unloading Location -->
+                <div class="input-box">
+
+                    <span class="input-icon unloading-icon">📍</span>
+
+                    <input
+                        type="text"
+                        id="drop-location"
+                        name="drop_location"
+                        placeholder="Unloading Location"
+                        autocomplete="off"
+                        required>
+
+                    <div id="drop-suggestions" class="suggestions"></div>
+
+                </div>
+
+                <!-- Loading Date -->
+                <div class="input-box">
+
+                    <span class="input-icon" style="background:#3b82f6;">📅</span>
+
+                    <input
+                        type="date"
+                        id="booking-date"
+                        name="booking_date"
+                        min="2026-07-08"
+                        required>
+
+                </div>
+
+                <!-- Customer Name -->
+                <div class="input-box">
+
+                    <span class="input-icon" style="background:#6366f1;">👤</span>
+
+                    <input
+                        type="text"
+                        name="customer_name"
+                        placeholder="Customer Name"
+                        required>
+
+                </div>
+                <div class="input-box">
+
+    <span class="input-icon">📧</span>
+
+    <input
+        type="email"
+        name="customer_email"
+        placeholder="Customer Email"
+        required>
+
+</div>
+
+                <!-- Mobile Number -->
+                <div class="input-box">
+
+                    <span class="input-icon" style="background:#f59e0b;">📞</span>
+
+                    <input
+                        type="tel"
+                        name="customer_mobile"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        placeholder="Mobile Number"
+                        required>
+
+                </div>
+
+
+                <!-- Hidden Coordinates -->
+                <input type="hidden" name="pickup_lat" id="pickup_lat">
+                <input type="hidden" name="pickup_lon" id="pickup_lon">
+
+                <input type="hidden" name="drop_lat" id="drop_lat">
+                <input type="hidden" name="drop_lon" id="drop_lon">
+
+                <button type="submit" class="estimate-btn">
+                    Get Estimate Price →
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+<style>
+
+/* ==========================================
+   LOCATION SUGGESTIONS
+========================================== */
+
+/* ==========================================
+   LOCATION SUGGESTIONS
+========================================== */
+
+.suggestions{
+    position:absolute;
+    top:100%;
+    left:0;
+    width:100%;
+
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:18px;
+
+    max-height:220px;
+    overflow-y:auto;
+
+    display:none;
+
+    z-index:99999;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.18);
+}
+
+.suggestions::-webkit-scrollbar{
+    width:6px;
+}
+
+.suggestions::-webkit-scrollbar-thumb{
+    background:#bdbdbd;
+    border-radius:20px;
+}
+
+.suggestion-item{
+    padding:14px 18px;
+    cursor:pointer;
+    transition:.25s;
+    border-bottom:1px solid #f1f1f1;
+    font-size:17px;
+    background:#ffffff;
+    color:#222;
+    font-weight: 500;
+}
+
+.suggestion-item:last-child{
+    border-bottom:none;
+}
+
+.suggestion-item:hover{
+    background:#0d6efd;
+    color:#fff;
+}
+
+
+/* ==========================================
+   HERO
+========================================== */
+
+.hero-section{
+
+    width:100%;
+    height:100vh;
+
+    background:
+    linear-gradient(rgba(8,27,49,.55),rgba(82,28,90,.55)),
+    url("{% static 'images/home-bg.jpg' %}");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.hero-content{
+
+    max-width:900px;
+    padding:20px;
+}
+
+.hero-content h1{
+
+    color:#fff;
+    font-size:5rem;
+    font-weight:900;
+    margin-bottom:20px;
+    text-shadow:0 8px 20px rgba(0,0,0,.45);
+}
+
+.hero-content p{
+
+    color:#fff;
+    font-size:1.55rem;
+    margin-bottom:35px;
+}
+
+.hero-btn{
+
+    background:linear-gradient(135deg,#00c853,#22c55e);
+    color:#fff;
+    border:none;
+    padding:18px 48px;
+    border-radius:50px;
+    font-size:22px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.hero-btn:hover{
+
+    transform:translateY(-4px);
+}
+
+
+/* ==========================================
+   POPUP
+========================================== */
+
+.popup-overlay{
+
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    display:none;
+
+    justify-content:center;
+    align-items:center;
+
+    z-index:9999;
+}
+
+
+/* ==========================================
+   CARD
+========================================== */
+
+.booking-container{
+
+    width:700px;
+    max-height:90vh;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+
+    border-radius:25px;
+
+    background:linear-gradient(135deg,#081b31,#4b2c74);
+
+    color:#fff;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.35);
+
+    position:relative;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.booking-header{
+
+    padding:35px;
+    text-align:center;
+    border-bottom:1px solid rgba(255,255,255,.15);
+    flex-shrink:0;
+}
+
+.booking-title{
+
+    font-size:38px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.booking-subtitle{
+
+    color:#d7d7d7;
+    margin:0;
+}
+
+
+/* ==========================================
+   SCROLLABLE FORM
+========================================== */
+
+.booking-form{
+
+    flex:1;
+    overflow-y:auto;
+    padding:30px;
+}
+
+.booking-form::-webkit-scrollbar{
+
+    width:7px;
+}
+
+.booking-form::-webkit-scrollbar-thumb{
+
+    background:#bdbdbd;
+    border-radius:20px;
+}
+
+
+/* ==========================================
+   CLOSE BUTTON
+========================================== */
+
+.close-btn{
+
+    position:absolute;
+    top:18px;
+    right:22px;
+
+    font-size:34px;
+    cursor:pointer;
+
+    color:#fff;
+}
+
+.close-btn:hover{
+
+    transform:rotate(90deg);
+}
+
+
+/* ==========================================
+   INPUT BOX
+========================================== */
+
+.input-box{
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+
+    background:#fff;
+
+    height:68px;
+
+    border-radius:18px;
+
+    padding:0 18px;
+
+    margin-bottom:20px;
+
+    border:2px solid transparent;
+
+    transition:.3s;
+}
+
+.input-box:hover{
+
+    border-color:#3b82f6;
+    box-shadow:0 10px 25px rgba(59,130,246,.18);
+}
+
+.input-box:focus-within{
+
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+}
+
+
+/* ==========================================
+   ICONS
+========================================== */
+
+.input-icon{
+
+    width:42px;
+    height:42px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:12px;
+
+    color:#fff;
+
+    font-size:20px;
+
+    margin-right:15px;
+
+    flex-shrink:0;
+}
+
+/* Loading = RED */
+
+.loading-icon{
+
+    background:linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+/* Unloading = GREEN */
+
+.unloading-icon{
+
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+
+/* ==========================================
+   INPUT
+========================================== */
+
+.input-box input{
+
+    width:100%;
+    border:none;
+    outline:none;
+    background:none;
+
+    font-size:18px;
+    color:#333;
+}
+
+.input-box input::placeholder{
+
+    color:#888;
+}
+
+
+/* ==========================================
+   BUTTON
+========================================== */
+
+.estimate-btn{
+
+    width:100%;
+    height:65px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:linear-gradient(135deg,#00c853,#22c55e);
+
+    color:#fff;
+
+    font-size:22px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.estimate-btn:hover{
+
+    transform:translateY(-3px);
+    box-shadow:0 12px 28px rgba(0,200,83,.35);
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media(max-width:768px){
+
+.hero-content h1{
+
+    font-size:3rem;
+}
+
+.hero-content p{
+
+    font-size:1.2rem;
+}
+
+.booking-container{
+
+    width:95%;
+    max-height:90vh;
+}
+
+.booking-title{
+
+    font-size:28px;
+}
+
+.booking-form{
+
+    padding:20px;
+}
+
+.input-box{
+
+    height:60px;
+}
+
+.input-box input{
+
+    font-size:16px;
+}
+
+.estimate-btn{
+
+    height:58px;
+    font-size:18px;
+}
+
+}
+</style>
+<script>
+/* ===========================
+   POPUP
+=========================== */
+
+function openPopup() {
+    document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("popup").style.display = "none";
+}
+
+
+/* ===========================
+   SEARCH LOCATIONS
+=========================== */
+
+async function searchLocation(query, suggestionBoxId, inputId) {
+
+    const suggestionBox = document.getElementById(suggestionBoxId);
+
+    if (query.trim().length < 3) {
+        suggestionBox.innerHTML = "";
+        suggestionBox.style.display = "none";
+        return;
+    }
+
+    try {
+const response = await fetch(
+`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&countrycodes=in&limit=5&q=${encodeURIComponent(query)}`
+);
+
+        const places = await response.json();
+
+        suggestionBox.innerHTML = "";
+
+        if (places.length === 0) {
+            suggestionBox.style.display = "none";
+            return;
+        }
+
+        suggestionBox.style.display = "block";
+
+        places.forEach(place => {
+
+            const item = document.createElement("div");
+
+            item.className = "suggestion-item";
+
+            const city =
+                place.address?.city ||
+                place.address?.town ||
+                place.address?.village ||
+                place.address?.county ||
+                place.address?.state_district ||
+                place.address?.state ||
+                place.display_name;
+
+            item.innerText = city;
+
+            item.onclick = function () {
+
+                document.getElementById(inputId).value = city;
+
+                if (inputId === "pickup-location") {
+
+                    document.getElementById("pickup_lat").value = place.lat;
+                    document.getElementById("pickup_lon").value = place.lon;
+
+                } else {
+
+                    document.getElementById("drop_lat").value = place.lat;
+                    document.getElementById("drop_lon").value = place.lon;
+
+                }
+
+                suggestionBox.innerHTML = "";
+                suggestionBox.style.display = "none";
+            };
+
+            suggestionBox.appendChild(item);
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        suggestionBox.innerHTML = "";
+        suggestionBox.style.display = "none";
+    }
+}
+
+
+/* ===========================
+   PAGE LOAD
+=========================== */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* Today's date */
+
+    const today = new Date().toISOString().split("T")[0];
+
+    document.getElementById("booking-date").min = today;
+
+
+    /* Pickup */
+
+    document.getElementById("pickup-location")
+        .addEventListener("input", function () {
+
+            searchLocation(
+                this.value,
+                "pickup-suggestions",
+                "pickup-location"
+            );
+
+        });
+
+
+    /* Drop */
+
+    document.getElementById("drop-location")
+        .addEventListener("input", function () {
+
+            searchLocation(
+                this.value,
+                "drop-suggestions",
+                "drop-location"
+            );
+
+        });
+
+});
+
+
+/* ===========================
+   HIDE SUGGESTIONS
+=========================== */
+
+document.addEventListener("click", function (e) {
+
+    if (!e.target.closest(".input-box")) {
+
+        document.getElementById("pickup-suggestions").style.display = "none";
+
+        document.getElementById("drop-suggestions").style.display = "none";
+
+    }
+
+});
+
+
+/* ===========================
+   CLOSE POPUP OUTSIDE CLICK
+=========================== */
+
+window.addEventListener("click", function (e) {
+
+    const popup = document.getElementById("popup");
+
+    if (e.target === popup) {
+
+        closePopup();
+
+    }
+
+});
+</script>
+
+<!-- Replace YOUR_API_KEY with your Google API key -->
+
+
+
+{% endblock %}
