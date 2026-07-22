@@ -137,14 +137,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Added manually
 
 FAST2SMS_API_KEY = "iL0lYEARI2jS46XHPbpM7OqkTUfadKnsNZ3ytDrBWhwxQVeg59InMSg39biO7Cz8XsE4DjQWBZh5FPRV"
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
-
 EMAIL_PORT = 587
 
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'ajendra062005@gmail.com'
+EMAIL_HOST_USER = os.getenv('ajendra062005@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('mizf ggfa ojuw vrcb')
 
-EMAIL_HOST_PASSWORD = 'mizf ggfa ojuw vrcb'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
