@@ -313,96 +313,84 @@ def send_owner_email(owner, booking, distance):
 # Create Booking
 def create_booking(request):
 
-    if request.method == "POST":
+    if request.method != "POST":
+        return render(request, "booking_failed.html")
 
-        pickup = request.POST.get("pickup_location")
-        drop = request.POST.get("drop_location")
-        customer_email = request.POST.get("customer_email")
+    # Customer Details
+    name = request.POST.get("customer_name")
+    mobile = request.POST.get("customer_mobile")
+    pickup = request.POST.get("pickup_location")
+    drop = request.POST.get("drop_location")
+    booking_date = request.POST.get("booking_date")
 
-        name = request.POST.get("customer_name")
-        mobile = request.POST.get("customer_mobile")
-        booking_date = request.POST.get("booking_date")
+    # Find available truck owner
+    owner = TruckOwner.objects.filter(available=True).first()
 
-        owner = TruckOwner.objects.filter(
-            available=True
-        ).first()
-
-        if owner:
-
-            try:
-
-                pickup_lat = float(
-                    request.POST.get("pickup_lat")
-                )
-
-                pickup_lon = float(
-                    request.POST.get("pickup_lon")
-                )
-
-                drop_lat = float(
-                    request.POST.get("drop_lat")
-                )
-
-                drop_lon = float(
-                    request.POST.get("drop_lon")
-                )
-
-                url = (
-                f"https://router.project-osrm.org/route/v1/driving/"
-                f"{pickup_lon},{pickup_lat};{drop_lon},{drop_lat}"
-                f"?overview=false"
-                )
-
-                response = requests.get(url)
-
-                print("STATUS:", response.status_code)
-                print("RESPONSE:", response.text)
-
-                data = response.json()
-
-                distance_km = (
-                data["routes"][0]["distance"]
-                / 1000
-                )
-
-                price = round(
-                    float(owner.rate_per_km)
-                    * distance_km,
-                    2
-                )
-
-            except Exception as e:
-
-                print("ERROR:",e)
-
-                distance_km = 0
-                price = 0
-            booking = Booking.objects.create(
-                customer_name=name,
-                customer_mobile=mobile,
-                loading_location=pickup,
-                unloading_location=drop,
-                booking_date=booking_date,
-                estimated_price=price,
-                truck_owner=owner,
-                status="Pending"
-            )
-            print(settings.FAST2SMS_API_KEY)
-
-            send_owner_email(
-                owner,
-                booking,
-                distance_km,
-    
-             )
-            return redirect("booking_status", booking.id)
-    else:        
+    if owner is None:
         return render(
             request,
-            "booking_failed.html"
+            "booking_failed.html",
+            {
+                "message": "Sorry! No truck owner is available right now."
+            },
         )
 
-    return redirect("/")
+    # Default values
+    distance_km = 0
+    price = 0
+
+    try:
+        pickup_lat = float(request.POST.get("pickup_lat"))
+        pickup_lon = float(request.POST.get("pickup_lon"))
+        drop_lat = float(request.POST.get("drop_lat"))
+        drop_lon = float(request.POST.get("drop_lon"))
+
+        url = (
+            f"https://router.project-osrm.org/route/v1/driving/"
+            f"{pickup_lon},{pickup_lat};"
+            f"{drop_lon},{drop_lat}"
+            f"?overview=false"
+        )
+
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if data.get("routes"):
+            distance_km = data["routes"][0]["distance"] / 1000
+            price = round(
+                float(owner.rate_per_km) * distance_km,
+                2
+            )
+
+    except Exception as e:
+        print("Distance calculation error:", e)
+
+    # Create Booking
+    booking = Booking.objects.create(
+        customer_name=name,
+        customer_mobile=mobile,
+        loading_location=pickup,
+        unloading_location=drop,
+        booking_date=booking_date,
+        estimated_price=price,
+        truck_owner=owner,
+        status="Pending",
+    )
+
+    # Send owner notification
+    try:
+        send_owner_email(
+            owner,
+            booking,
+            distance_km,
+        )
+    except Exception as e:
+        print("Email Error:", e)
+
+    # Redirect to booking status page
+    return redirect("booking_status", booking.id)
 def booking_status_api(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
     return JsonResponse({
