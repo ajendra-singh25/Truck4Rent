@@ -378,15 +378,15 @@ def create_booking(request):
                 distance_km = 0
                 price = 0
             booking = Booking.objects.create(
-    customer_name=name,
-    customer_mobile=mobile,
-    loading_location=pickup,
-    unloading_location=drop,
-    booking_date=booking_date,
-    estimated_price=price,
-    truck_owner=owner,
-    status="Pending"
-)
+                customer_name=name,
+                customer_mobile=mobile,
+                loading_location=pickup,
+                unloading_location=drop,
+                booking_date=booking_date,
+                estimated_price=price,
+                truck_owner=owner,
+                status="Pending"
+            )
             print(settings.FAST2SMS_API_KEY)
 
             send_owner_email(
@@ -395,12 +395,8 @@ def create_booking(request):
                 distance_km,
     
              )
-        return redirect("booking_status", booking.id)
-   
-
-                
-            
-
+            return redirect("booking_status", booking.id)
+    else:        
         return render(
             request,
             "booking_failed.html"
