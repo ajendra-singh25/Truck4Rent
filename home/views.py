@@ -7,8 +7,9 @@ from .models import TruckOwner, Booking
 from django.http import JsonResponse
 from twilio.rest import Client
 from django.shortcuts import render
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.conf import settings
+from django.urls import reverse
 
 
 
@@ -130,191 +131,118 @@ def send_owner_sms(owner, pickup, drop, price):
         print("SMS Error:", e)
 def send_owner_email(owner, booking, distance):
 
-    BASE_URL = "https://nerd-shelter-laundry.ngrok-free.dev"
+    BASE_URL = "https://truck4rent.onrender.com"
 
-    accept_url = f"{BASE_URL}/accept-booking/{booking.id}/"
-    reject_url = f"{BASE_URL}/reject-booking/{booking.id}/"
+    accept_url = BASE_URL + reverse(
+        "accept_booking",
+        args=[booking.id]
+    )
+
+    reject_url = BASE_URL + reverse(
+        "reject_booking",
+        args=[booking.id]
+    )
 
     subject = "🚚 New Truck Booking - Truck4Rent"
 
     html_message = f"""
-    <!DOCTYPE html>
     <html>
 
-    <body style="margin:0;padding:20px;background:#f4f6f9;font-family:Arial,sans-serif;">
+    <body style="font-family:Arial;background:#f4f4f4;padding:20px;">
 
-    <table align="center"
-           cellpadding="0"
-           cellspacing="0"
-           width="650"
-           style="background:#ffffff;
-                  border-radius:12px;
-                  overflow:hidden;
-                  box-shadow:0 5px 20px rgba(0,0,0,.15);">
+    <div style="
+        max-width:700px;
+        margin:auto;
+        background:white;
+        border-radius:10px;
+        padding:30px;
+    ">
 
-        <!-- Header -->
-        <tr>
-            <td style="background:#0d2b4d;
-                       color:white;
-                       text-align:center;
-                       padding:25px;">
+    <h2 style="color:#0d2b4d;">
+    🚚 New Truck Booking
+    </h2>
 
-                <h1 style="margin:0;">
-                    🚚 Truck4Rent
-                </h1>
+    <hr>
 
-                <p style="margin-top:10px;font-size:17px;">
-                    New Truck Booking Request
-                </p>
+    <p><b>Customer:</b> {booking.customer_name}</p>
 
-            </td>
-        </tr>
+    <p><b>Mobile:</b> {booking.customer_mobile}</p>
 
-        <!-- Booking Details -->
-        <tr>
+    <p><b>Pickup:</b> {booking.loading_location}</p>
 
-            <td style="padding:30px;">
+    <p><b>Drop:</b> {booking.unloading_location}</p>
 
-                <h2 style="color:#0d2b4d;">
-                    Booking Details
-                </h2>
+    <p><b>Date:</b> {booking.booking_date}</p>
 
-                <table width="100%" cellpadding="8">
+    <p><b>Distance:</b> {distance:.2f} KM</p>
 
-                    <tr>
-                        <td><b>Customer</b></td>
-                        <td>{booking.customer_name}</td>
-                    </tr>
+    <h2 style="color:green;">
+        ₹ {booking.estimated_price}
+    </h2>
 
-                    <tr>
-                        <td><b>Mobile</b></td>
-                        <td>{booking.customer_mobile}</td>
-                    </tr>
+    <br>
 
-                    <tr>
-                        <td><b>Pickup</b></td>
-                        <td>{booking.loading_location}</td>
-                    </tr>
+    <a href="{accept_url}"
+    style="
+    background:#16a34a;
+    color:white;
+    padding:15px 30px;
+    text-decoration:none;
+    border-radius:8px;
+    font-size:18px;
+    ">
+    ✅ Accept Booking
+    </a>
 
-                    <tr>
-                        <td><b>Drop</b></td>
-                        <td>{booking.unloading_location}</td>
-                    </tr>
+    <br><br>
 
-                    <tr>
-                        <td><b>Booking Date</b></td>
-                        <td>{booking.booking_date}</td>
-                    </tr>
+    <a href="{reject_url}"
+    style="
+    background:#dc2626;
+    color:white;
+    padding:15px 30px;
+    text-decoration:none;
+    border-radius:8px;
+    font-size:18px;
+    ">
+    ❌ Reject Booking
+    </a>
 
-                    <tr>
-                        <td><b>Distance</b></td>
-                        <td>{distance:.2f} KM</td>
-                    </tr>
+    <br><br>
 
-                    <tr>
-                        <td><b>Estimated Price</b></td>
-
-                        <td style="
-                            color:#16a34a;
-                            font-size:22px;
-                            font-weight:bold;">
-
-                            ₹{booking.estimated_price}
-
-                        </td>
-                    </tr>
-
-                </table>
-
-                <br><br>
-
-                <div style="text-align:center;">
-
-                    <p>
-
-                        <a href="{accept_url}"
-                           style="
-                           background:#16a34a;
-                           color:white;
-                           text-decoration:none;
-                           padding:15px 28px;
-                           border-radius:8px;
-                           display:inline-block;
-                           font-size:18px;
-                           font-weight:bold;">
-
-                           ✅ Accept Booking
-
-                        </a>
-
-                    </p>
-
-                    <p>
-
-                        <a href="{reject_url}"
-                           style="
-                           background:#dc2626;
-                           color:white;
-                           text-decoration:none;
-                           padding:15px 28px;
-                           border-radius:8px;
-                           display:inline-block;
-                           font-size:18px;
-                           font-weight:bold;">
-
-                           ❌ Reject Booking
-
-                        </a>
-
-                    </p>
-
-                </div>
-
-            </td>
-
-        </tr>
-
-        <!-- Footer -->
-
-        <tr>
-
-            <td style="
-                background:#f5f5f5;
-                text-align:center;
-                padding:20px;
-                color:#666;
-                font-size:14px;">
-
-                Thank you for being a Truck4Rent Partner.<br>
-                Please respond to this booking as soon as possible.
-
-            </td>
-
-        </tr>
-
-    </table>
+    </div>
 
     </body>
+
     </html>
     """
 
+    connection = get_connection(timeout=10)
+
     email = EmailMultiAlternatives(
         subject=subject,
-        body="You have received a new truck booking.",
+        body="Truck Booking",
         from_email=settings.EMAIL_HOST_USER,
         to=[owner.email],
+        connection=connection
     )
 
     email.attach_alternative(html_message, "text/html")
-    email.send()
 
-    print("✅ EMAIL SENT SUCCESSFULLY")
+    try:
+        email.send()
+
+        print("Email Sent Successfully")
+
+    except Exception as e:
+
+        print("Email Error:", e)
 
 # Create Booking
 def create_booking(request):
 
     if request.method != "POST":
-        return render(request, "booking_failed.html")
+        return redirect("/")
 
     # Customer Details
     name = request.POST.get("customer_name")
@@ -323,25 +251,30 @@ def create_booking(request):
     drop = request.POST.get("drop_location")
     booking_date = request.POST.get("booking_date")
 
-    # Find available truck owner
-    owner = TruckOwner.objects.filter(available=True).first()
+    # Find Available Truck Owner
+    owner = TruckOwner.objects.filter(
+        available=True
+    ).first()
 
     if owner is None:
+
         return render(
             request,
             "booking_failed.html",
             {
-                "message": "Sorry! No truck owner is available right now."
-            },
+                "message": "Sorry! No truck owner is available."
+            }
         )
 
-    # Default values
+    # Default Values
     distance_km = 0
     price = 0
 
     try:
+
         pickup_lat = float(request.POST.get("pickup_lat"))
         pickup_lon = float(request.POST.get("pickup_lon"))
+
         drop_lat = float(request.POST.get("drop_lat"))
         drop_lon = float(request.POST.get("drop_lon"))
 
@@ -352,45 +285,68 @@ def create_booking(request):
             f"?overview=false"
         )
 
-        response = requests.get(url, timeout=10)
+        response = requests.get(
+            url,
+            timeout=10
+        )
+
         response.raise_for_status()
 
         data = response.json()
 
         if data.get("routes"):
-            distance_km = data["routes"][0]["distance"] / 1000
+
+            distance_km = (
+                data["routes"][0]["distance"] / 1000
+            )
+
             price = round(
                 float(owner.rate_per_km) * distance_km,
                 2
             )
 
     except Exception as e:
-        print("Distance calculation error:", e)
 
-    # Create Booking
+        print("Distance Error:", e)
+
+    # Save Booking
     booking = Booking.objects.create(
+
         customer_name=name,
+
         customer_mobile=mobile,
+
         loading_location=pickup,
+
         unloading_location=drop,
+
         booking_date=booking_date,
+
         estimated_price=price,
+
         truck_owner=owner,
-        status="Pending",
+
+        status="Pending"
     )
 
-    # Send owner notification
+    # Send Email (Don't stop booking if email fails)
     try:
+
         send_owner_email(
             owner,
             booking,
-            distance_km,
+            distance_km
         )
+
     except Exception as e:
+
         print("Email Error:", e)
 
-    # Redirect to booking status page
-    return redirect("booking_status", booking.id)
+    # Go to Booking Status Page
+    return redirect(
+        "booking_status",
+        booking.id
+    )
 def booking_status_api(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
     return JsonResponse({
@@ -402,32 +358,65 @@ def booking_status_api(request, booking_id):
 # Owner Accept Booking
 def accept_booking(request, booking_id):
 
-    booking = Booking.objects.get(id=booking_id)
+    try:
+
+        booking = Booking.objects.get(id=booking_id)
+
+    except Booking.DoesNotExist:
+
+        return HttpResponse(
+            "Booking not found.",
+            status=404
+        )
 
     booking.status = "Accepted"
+
     booking.save()
 
+    if booking.truck_owner:
+
+        booking.truck_owner.available = False
+
+        booking.truck_owner.save()
 
     return render(
         request,
         "owner_response.html",
         {
-            "message": "✅ Booking Accepted Successfully"
+            "message": "✅ Booking Accepted Successfully",
+            "booking": booking
         }
     )
 # Owner Reject Booking
 def reject_booking(request, booking_id):
 
-    booking = Booking.objects.get(id=booking_id)
+    try:
+
+        booking = Booking.objects.get(id=booking_id)
+
+    except Booking.DoesNotExist:
+
+        return HttpResponse(
+            "Booking not found.",
+            status=404
+        )
 
     booking.status = "Rejected"
+
     booking.save()
+
+    if booking.truck_owner:
+
+        booking.truck_owner.available = True
+
+        booking.truck_owner.save()
 
     return render(
         request,
         "owner_response.html",
         {
-            "message": "❌ Booking Rejected Successfully"
+            "message": "❌ Booking Rejected Successfully",
+            "booking": booking
         }
     )
 
@@ -520,8 +509,23 @@ def booking_rejected(request, booking_id):
     )
 def check_booking_status(request, booking_id):
 
-    booking = Booking.objects.get(id=booking_id)
+    try:
+        booking = Booking.objects.get(id=booking_id)
 
-    return JsonResponse({
-        "status": booking.status
-    })
+    except Booking.DoesNotExist:
+
+        return JsonResponse(
+            {
+                "status": "Not Found"
+            },
+            status=404
+        )
+
+    return JsonResponse(
+        {
+            "status": booking.status,
+            "price": str(booking.estimated_price),
+            "owner": booking.truck_owner.owner_name if booking.truck_owner else "",
+            "mobile": booking.truck_owner.mobile if booking.truck_owner else ""
+        }
+    )
